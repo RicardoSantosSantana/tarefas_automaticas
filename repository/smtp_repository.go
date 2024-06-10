@@ -1,22 +1,26 @@
 package repository
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/smtp"
 
 	"github.com/RicardoSantosSantana/tarefas_automaticas/domain/model"
 	"gorm.io/gorm"
 )
 
 type SMTPRepository struct {
-	db *gorm.DB
+	db    *gorm.DB
+	SMTP  *model.SMTP
+	EMAIL *model.Email
 }
 
-func NewSMTPRepository(db *gorm.DB) *SMTPRepository {
-	return &SMTPRepository{db: db}
+func NewSMTPRepository(db *gorm.DB, smtp *model.SMTP, email *model.Email) *SMTPRepository {
+	return &SMTPRepository{db: db, SMTP: smtp, EMAIL: email}
 }
 
-func (r *SMTPRepository) Save(smtp model.SMTP) bool {
-	result := r.db.Create(smtp)
+func (r *SMTPRepository) Save() bool {
+	result := r.db.Create(&r.SMTP)
 	return result.Error == nil
 }
 
@@ -26,8 +30,79 @@ func (r *SMTPRepository) Get() model.SMTP {
 	return smtp
 }
 
-func (r *SMTPRepository) Send(email string, message string) bool {
-	// Implementação do envio de email fictício
-	fmt.Printf("Sending email to %s with message: %s\n", email, message)
+func (r *SMTPRepository) Send() bool {
+	// Configurar a autenticação SMTP
+	auth := smtp.PlainAuth("", r.SMTP.User, r.SMTP.Password, r.SMTP.ServerURL)
+
+	// Compor o corpo do email
+	emailBody := r.EMAIL.MessageBody()
+
+	// Conectar ao servidor SMTP
+	conn, err := smtp.Dial(r.SMTP.ServerURL + ":" + r.SMTP.Port)
+	if err != nil {
+		fmt.Println("Falha ao conectar ao servidor SMTP:", err)
+		return false
+	}
+	defer conn.Close()
+
+	// Configurar a conexão TLS usando STARTTLS
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true, // Use com cuidado em produção
+		ServerName:         r.SMTP.ServerURL,
+	}
+
+	if err = conn.StartTLS(tlsConfig); err != nil {
+		fmt.Println("Falha ao iniciar a conexão TLS:", err)
+		return false
+	}
+
+	// Autenticar com o servidor SMTP
+	if err := conn.Auth(auth); err != nil {
+		fmt.Println("Falha na autenticação SMTP:", err)
+		return false
+	}
+
+	// Enviar o email
+	if err := conn.Mail(r.SMTP.User); err != nil {
+		fmt.Println("Falha ao definir o remetente:", err)
+		return false
+	}
+	if err := conn.Rcpt(r.EMAIL.To); err != nil {
+		fmt.Println("Falha ao definir o destinatário:", err)
+		return false
+	}
+
+	// Abrir o corpo do email
+	wc, err := conn.Data()
+	if err != nil {
+		fmt.Println("Falha ao abrir o corpo do email:", err)
+		return false
+	}
+	defer wc.Close()
+
+	// Escrever o corpo do email
+	_, err = wc.Write([]byte(emailBody))
+	if err != nil {
+		fmt.Println("Falha ao escrever o corpo do email:", err)
+		return false
+	}
+
+	fmt.Println("Email enviado com sucesso")
 	return true
 }
+
+// func (r *SMTPRepository) Send(SMTP *model.SMTP, Email *model.Email) bool {
+
+// 	auth := smtp.PlainAuth("", SMTP.User, SMTP.Password, SMTP.ServerURL)
+// 	// Construir o email
+// 	email := "To: " + Email.To + "\r\n" +
+// 		"Subject: " + Email.Subject + "\r\n" +
+// 		"\r\n" +
+// 		Email.Body
+
+// 	// Enviar o email
+// 	err := smtp.SendMail(SMTP.ServerURL+":"+SMTP.Port, auth, SMTP.User, []string{Email.To}, []byte(email))
+// 	fmt.Println(err)
+// 	return err == nil
+
+// }

@@ -1,15 +1,12 @@
 services:
-  postgres:
-    image: postgres:13
-    container_name: tarefas_postgres
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: tarefas_db
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+  recibo-service:
+    build: .
+    container_name: recibo
+    env_file:
+      - .env
+    networks:
+      - recibo-network
+ 
+networks:
+  recibo-network:
+    driver: bridge

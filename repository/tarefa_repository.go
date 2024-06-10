@@ -15,5 +15,6 @@ func NewTarefaRepository(db *gorm.DB) *TarefaRepository {
 
 func (r *TarefaRepository) Save(t *model.Tarefa) bool {
 	result := r.db.Create(t)
+
 	return result.Error == nil
 }

@@ -14,11 +14,15 @@ func NewTarefaService(repo interfaces.Tarefa, smtp interfaces.SMTP) *TarefaServi
 	return &TarefaService{repo: repo, smtp: smtp}
 }
 
-func (s *TarefaService) SalvarAgendamento(message string, email string, URL string, Hour int, Daily bool, Weekly bool, Annually bool) bool {
-	periodo := model.NewPeriod(Daily, Weekly, Annually)
-	tarefa := model.NewTarefa(URL, Hour, periodo)
+func (s *TarefaService) SalvarAgendamento(URL string, Hour int, Daily bool, Weekly bool, Annually bool) bool {
+
+	tarefa := model.NewTarefa(URL, Hour, Daily, Weekly, Annually)
+
 	if s.repo.Save(tarefa) {
-		return s.smtp.Send(email, message)
+		return s.smtp.Send()
+
 	}
+
 	return false
+
 }
