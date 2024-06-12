@@ -7,7 +7,7 @@ type Tarefa interface {
 }
 
 type SMTP interface {
-	Save(model.SMTP) bool
+	Save() bool
 	Get() model.SMTP
 	Send() bool
 }

@@ -1,0 +1,23 @@
+services:
+
+  db:
+    image: mariadb:latest
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password  # Substitua com uma senha segura para o root
+      MYSQL_DATABASE: recibo_db           # Substitua pelo nome do banco de dados desejado
+      MYSQL_USER: user                    # Substitua com um nome de usuário desejado
+      MYSQL_PASSWORD: user_password       # Substitua com uma senha segura para o usuário
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - recibo-network
+    ports:
+      - "3306:3306"
+      
+networks:
+  recibo-network:
+    driver: bridge    
+
+volumes:
+  db_data:

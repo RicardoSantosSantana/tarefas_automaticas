@@ -13,6 +13,7 @@ import (
 var DB *gorm.DB
 
 func CreateDBURL() string {
+
 	user := os.Getenv("USER")
 	password := os.Getenv("PASSWORD")
 	host := os.Getenv("HOST")

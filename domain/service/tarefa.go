@@ -20,9 +20,7 @@ func (s *TarefaService) SalvarAgendamento(URL string, Hour int, Daily bool, Week
 
 	if s.repo.Save(tarefa) {
 		return s.smtp.Send()
-
 	}
 
 	return false
-
 }

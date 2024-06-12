@@ -6,7 +6,12 @@ services:
       - .env
     networks:
       - recibo-network
+    depends_on:
+      - db
  
 networks:
   recibo-network:
     driver: bridge
+    external: true
+volumes:
+  db_data:

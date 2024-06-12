@@ -90,19 +90,3 @@ func (r *SMTPRepository) Send() bool {
 	fmt.Println("Email enviado com sucesso")
 	return true
 }
-
-// func (r *SMTPRepository) Send(SMTP *model.SMTP, Email *model.Email) bool {
-
-// 	auth := smtp.PlainAuth("", SMTP.User, SMTP.Password, SMTP.ServerURL)
-// 	// Construir o email
-// 	email := "To: " + Email.To + "\r\n" +
-// 		"Subject: " + Email.Subject + "\r\n" +
-// 		"\r\n" +
-// 		Email.Body
-
-// 	// Enviar o email
-// 	err := smtp.SendMail(SMTP.ServerURL+":"+SMTP.Port, auth, SMTP.User, []string{Email.To}, []byte(email))
-// 	fmt.Println(err)
-// 	return err == nil
-
-// }

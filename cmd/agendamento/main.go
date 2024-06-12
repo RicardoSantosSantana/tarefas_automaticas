@@ -1,39 +1,44 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/RicardoSantosSantana/tarefas_automaticas/config"
 	"github.com/RicardoSantosSantana/tarefas_automaticas/domain/model"
+	"github.com/RicardoSantosSantana/tarefas_automaticas/domain/service"
 	"github.com/RicardoSantosSantana/tarefas_automaticas/repository"
 )
 
 func main() {
-	// SMTP
-	port := "587"
-	url := "smtp.needsolution.com.br"
-	user := "ricardo@needsolution.com.br"
-	password := "senha001"
-	SMTP := model.NewSMTP(port, url, user, password)
 
-	// EMAIL
-	from := "ricardo@needsolution.com.br"
-	to := "rssantan@gmail.com"
-	subject := "Mensagem de Teste 2"
-	message := "Esta é uma mensagem de teste com envio via Golang 2"
-	EMAIL := model.NewEMail(from, to, subject, message)
+	config.InitDB()
+
+	EMAIL, err := model.NewEMail()
+	if err != nil {
+		for _, erros := range err {
+			fmt.Println(erros.Error())
+		}
+		os.Exit(2)
+	}
+
+	SMTP, errSMTP := model.NewSMTP()
+
+	if errSMTP != nil {
+		for _, erros_smtp := range errSMTP {
+			fmt.Println(erros_smtp.Error())
+		}
+		os.Exit(2)
+	}
 
 	smtpRepo := repository.NewSMTPRepository(config.DB, SMTP, EMAIL)
-	smtpRepo.Send()
 
-}
+	tarefaRepo := repository.NewTarefaRepository(config.DB)
 
-func Main2() {
-	//config.InitDB()
+	tarefaService := service.NewTarefaService(tarefaRepo, smtpRepo)
 
-	//tarefaRepo := repository.NewTarefaRepository(config.DB)
+	result := tarefaService.SalvarAgendamento("http://example.com", 10, true, false, false)
 
-	// tarefaService := service.NewTarefaService(tarefaRepo, smtpRepo)
+	fmt.Printf("SalvarAgendamento result: %v\n", result)
 
-	// result := tarefaService.SalvarAgendamento(SMTP, EMAIL, "http://example.com", 10, true, false, false)
-
-	// fmt.Printf("SalvarAgendamento result: %v\n", result)
 }
